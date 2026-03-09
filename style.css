@@ -1,0 +1,146 @@
+/* 背景巨大数字水印 */
+.bg-watermark {
+    position: absolute;
+    right: 5%;
+    bottom: 5%;
+    font-size: 25rem;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.02); /* 极其淡，若隐若现 */
+    font-family: var(--font-mono);
+    user-select: none;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* 档案标签修饰 */
+.file-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--accent-color);
+    color: var(--bg-color);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    clip-path: polygon(0 0, 90% 0, 100% 100%, 0% 100%); /* 梯形标签感 */
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .bg-watermark { font-size: 10rem; }
+    .member-name { font-size: 3rem; }
+}
+/* 隐藏原生光标 */
+html, body { cursor: none; }
+
+.cursor-dot, .cursor-outline {
+    pointer-events: none;
+    position: fixed;
+    top: 0; left: 0;
+    border-radius: 50%;
+    z-index: 9999;
+    transition: transform 0.1s ease-out, opacity 0.3s;
+}
+.cursor-dot {
+    width: 6px; height: 6px;
+    background-color: var(--accent-color);
+}
+.cursor-outline {
+    width: 30px; height: 30px;
+    border: 1px solid var(--accent-color);
+    transition: all 0.2s ease-out; /* 增加滞后感，显得高级 */
+}
+/* 悬停在卡片上时准星放大 */
+.cursor-active {
+    transform: scale(2);
+    background-color: rgba(88, 166, 255, 0.1);
+    border-color: #fff;
+}
+.member-name {
+    font-family: var(--font-mono);
+    /* 初始状态稍微模糊 */
+    filter: blur(2px);
+    transition: filter 0.5s;
+}
+.is-visible .member-name {
+    filter: blur(0);
+}.site-footer {
+    padding: 60px 10%;
+    background: rgba(5, 7, 10, 0.95);
+    border-top: 1px solid var(--border-color);
+    font-family: var(--font-mono);
+    position: relative;
+    z-index: 100;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+/* 版权区样式 */
+.copyright {
+    font-size: 0.8rem;
+    color: var(--text-main);
+    letter-spacing: 1px;
+}
+
+.system-tag {
+    font-size: 0.6rem;
+    color: var(--accent-color);
+    margin-top: 5px;
+    opacity: 0.6;
+}
+
+/* 联系方式区样式 */
+.contact-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: right;
+}
+
+.contact-item {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.contact-item:hover {
+    color: var(--accent-color);
+}
+
+.contact-item .label {
+    color: var(--accent-color);
+    margin-right: 5px;
+}
+
+/* 装饰性动效：底部扫描线 */
+.footer-line {
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+    opacity: 0.3;
+    animation: footerScan 3s ease-in-out infinite;
+}
+
+@keyframes footerScan {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* 手机端适配 */
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+        text-align: center;
+    }
+    .contact-links { text-align: center; }
+}

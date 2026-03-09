@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DORM_404 // DATABASE_PREMIUM</title>
+    <style>
+        /* --- 1. 核心变量 (大厂调色盘) --- */
+        :root {
+            --bg-color: #05070a; 
+            --accent-color: #58a6ff;
+            --accent-glow: rgba(88, 166, 255, 0.4);
+            --text-main: #ffffff;
+            --text-dim: #8b949e;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --font-mono: 'Fira Code', 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            overflow: hidden;
+        }
+
+        /* --- 2. 动态背景网格 --- */
+        .bg-wrapper {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+            perspective: 1000px;
+        }
+        .bg-grid {
+            position: absolute;
+            width: 120%; height: 120%;
+            top: -10%; left: -10%;
+            background-image: 
+                linear-gradient(var(--border-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+            opacity: 0.2;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* --- 3. 滚动容器 --- */
+        .container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            position: relative;
+            z-index: 10;
+        }
+
+        section {
+            height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 10%;
+        }
+
+        /* --- 4. 侧边导航线条 (大厂规范) --- */
+        .indicator {
+            position: fixed;
+            right: 40px; top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 100;
+        }
+        .line {
+            width: 2px; height: 20px;
+            background: var(--border-color);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .line.active {
+            height: 50px;
+            background: var(--accent-color);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        /* --- 5. 首屏大气布局 --- */
+        .hero-layout {
+            display: flex;
+            width: 100%;
+            max-width: 1300px;
+            gap: 100px;
+            align-items: center;
+        }
+
+        .glitch-title {
+            font-size: clamp(3rem, 10vw, 7rem);
+            font-weight: 900;
+            letter-spacing: -5px;
+            line-height: 0.9;
+            margin: 20px 0;
+            background: linear-gradient(180deg, #fff 30%, var(--accent-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 打字机效果 */
+        .typewriter {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 4px solid var(--accent-color);
+            width: 0;
+            animation: typing 1.5s steps(15) forwards, blink 0.8s infinite;
+        }
+
+        /* 玻璃态卡片矩阵 */
+        .member-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            outline: 1px solid var(--border-color);
+            padding: 40px 30px;
+            text-decoration: none;
+            color: #fff;
+            font-family: var(--font-mono);
+            backdrop-filter: blur(10px);
+            transition: 0.4s;
+            position: relative;
+            opacity: 0; transform: translateY(30px);
+            animation: cardFadeIn 0.5s forwards;
+        }
+        .glass-card:hover {
+            outline: 1px solid var(--accent-color);
+            background: rgba(88, 166, 255, 0.1);
+            box-shadow: 0 0 30px var(--accent-glow);
+            transform: scale(1.05) translateY(-5px);
+        }
+        .glass-card span { font-size: 0.7rem; color: var(--accent-color); position: absolute; top: 15px; left: 15px; }
+
+        /* --- 6. 详情页入场效果 --- */
+        .member-content {
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: 1s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .is-visible .member-content { opacity: 1; transform: translateX(0); }
+
+        .member-name { font-size: 5rem; font-weight: 800; letter-spacing: -3px; margin-bottom: 20px; }
+        .tag { border: 1px solid var(--border-color); padding: 5px 15px; font-size: 0.8rem; margin-right: 10px; color: var(--accent-color); font-family: var(--font-mono); }
+        .desc { max-width: 600px; line-height: 1.8; color: var(--text-dim); margin-top: 30px; font-size: 1.1rem; }
+
+        /* 动画帧 */
+        @keyframes typing { from { width: 0; } to { width: 100%; } }
+        @keyframes blink { 50% { border-color: transparent; } }
+        @keyframes cardFadeIn { to { opacity: 1; transform: translateY(0); } }
+
+        /* 手机适配 */
+        @media (max-width: 900px) {
+            .hero-layout { flex-direction: column; text-align: center; }
+            .member-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-wrapper">
+        <div class="bg-grid" id="grid"></div>
+    </div>
+
+    <div class="indicator" id="indicator"></div>
+
+  <div class="container" id="main-container">
+    <section id="home">
+        <div class="hero-layout">
+            <div class="hero-left">
+                <p style="font-family: var(--font-mono); color: var(--accent-color); font-size: 0.9rem;">[ SYSTEM_STATUS: STABLE ]</p>
+                <div class="typewriter">
+                    <h1 class="glitch-title">WELCOME TO 605</h1>
+                </div>
+                <p style="color: var(--text-dim); font-family: var(--font-mono); margin-top: 15px; letter-spacing: 1px;">
+                    > 正在同步 605 实验室核心成员档案...<br>
+                    > 实时在线人数: 06 / 权限等级: ROOT
+                </p>
+            </div>
+            <div class="hero-right">
+                <div class="member-grid">
+                    <a href="#m1" class="glass-card" style="animation-delay: 0.8s;"><span>#01</span>柳哲宇</a>
+                    <a href="#m2" class="glass-card" style="animation-delay: 1.0s;"><span>#02</span>吕沛弘</a>
+                    <a href="#m3" class="glass-card" style="animation-delay: 1.2s;"><span>#03</span>俞皓睿</a>
+                    <a href="#m4" class="glass-card" style="animation-delay: 1.4s;"><span>#04</span>陈浩翔</a>
+                    <a href="#m5" class="glass-card" style="animation-delay: 1.6s;"><span>#05</span>马霖</a>
+                    <a href="#m6" class="glass-card" style="animation-delay: 1.8s;"><span>#06</span>吴玉翔</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="m1">
+        <div class="bg-watermark">01</div>
+        <div class="member-content">
+            <span class="file-tag">FILE_01 / ARCHITECT</span>
+            <h2 class="member-name">柳哲宇 Yenai</h2>
+            <div class="tags"><span class="tag">GO</span><span class="tag">K8S</span><span class="tag">REDIS</span></div>
+            <p class="desc">寝室里的极致枪男。他坚信只要跑得够快，枪法够稳，寂寞就追不上他。擅长在逆风环境下进行各种的极限操作。</p>
+        </div>
+    </section>
+
+    <section id="m2">
+        <div class="bg-watermark">02</div>
+        <div class="member-content">
+            <span class="file-tag">FILE_02 / PIXEL_ARTIST</span>
+            <h2 class="member-name">吕沛弘 Kyrie</h2>
+            <div class="tags"><span class="tag">REACT</span><span class="tag">THREE.JS</span><span class="tag">FIGMA</span></div>
+            <p class="desc">峡谷猎杀王者。他花在调教对面c上的时间比吃饭的时间还要长。寝室所有王者项目的担当，也是唯二的“峡谷防线”。。</p>
+        </div>
+    </section>
+
+    <section id="m3">
+        <div class="bg-watermark">03</div>
+        <div class="member-content">
+            <span class="file-tag">FILE_03 / AI_MODELER</span>
+            <h2 class="member-name">俞皓睿 Seven</h2>
+            <div class="tags"><span class="tag">PYTHON</span><span class="tag">PYTORCH</span><span class="tag">CUDA</span></div>
+            <p class="desc">寝室里的杀鹅专家。电脑风扇整天因为训练模型而发出直升机般的轰鸣。他的口头禅是：“你们这群猪纹”</p>
+        </div>
+    </section>
+
+    <section id="m4">
+        <div class="bg-watermark">04</div>
+        <div class="member-content">
+            <span class="file-tag">FILE_04 / SEC_PENTESTER</span>
+            <h2 class="member-name">陈浩翔 HANKING</h2>
+            <div class="tags"><span class="tag">KALI</span><span class="tag">WIRESHARK</span><span class="tag">CTF</span></div>
+            <p class="desc">沉默寡言的fps极客。除了研究渗透小镇测试，就是帮大家找回忘记的父亲的感觉。他的屏幕上永远闪烁着绿色的战绩代码。</p>
+        </div>
+    </section>
+
+    <section id="m5">
+        <div class="bg-watermark">05</div>
+        <div class="member-content">
+            <span class="file-tag">FILE_05 / HARDWARE_DEV</span>
+            <h2 class="member-name">马霖 TUSHAXIAO</h2>
+            <div class="tags"><span class="tag">ESP32</span><span class="tag">C++</span><span class="tag">PCB_DESIGN</span></div>
+            <p class="desc">动手能力极强。瓦届的终结者，用坚强的身躯改造了瓦罗兰特的门禁，实现了展背一键关门。桌面上堆满了各种神仙补给。</p>
+        </div>
+    </section>
+
+    <section id="m6">
+        <div class="bg-watermark">06</div>
+        <div class="member-content">
+            <span class="file-tag">FILE_06 / DEVOPS</span>
+            <h2 class="member-name">吴玉翔 WU</h2>
+            <div class="tags"><span class="tag">CI/CD</span><span class="tag">LINUX</span><span class="tag">AWS</span></div>
+            <p class="desc">寝室的恋爱大管家。负责管理玉凤的共享服务器。他总是能在午夜准时部署玉凤，确保个人能按时交卷。</p>
+        </div>
+    </section>
+    <footer class="site-footer">
+    <div class="footer-content">
+        <div class="footer-left">
+            <p class="copyright">© 2026 DORM_605_LAB. ALL_RIGHTS_RESERVED.</p>
+            <p class="system-tag">ENCRYPTED_DATABASE_V2.0.4</p>
+        </div>
+        
+        <div class="footer-right">
+            <div class="contact-links">
+                <a href="mailto:admin@dorm404.tech" class="contact-item">
+                    <span class="label">MAIL:</span> 2538105722@qq.com
+                </a>
+                <a href="#" class="contact-item">
+                    <span class="label">GITHUB:</span> @DORM_605
+                </a>
+                <div class="contact-item">
+                    <span class="label">LOC:</span> 宁波财经
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-line"></div>
+</footer>
+</div>
+
+    <script>
+        // 1. 动态生成指示线
+        const sections = document.querySelectorAll('section');
+        const indicator = document.getElementById('indicator');
+        sections.forEach((_, i) => {
+            const line = document.createElement('div');
+            line.classList.add('line');
+            if(i === 0) line.classList.add('active');
+            indicator.appendChild(line);
+        });
+
+        // 2. 鼠标视差效果 (这是提升高级感的关键)
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.clientX) / 50;
+            const y = (window.innerHeight / 2 - e.clientY) / 50;
+            document.getElementById('grid').style.transform = `translate(${x}px, ${y}px) rotateX(${y*0.1}deg) rotateY(${x*0.1}deg)`;
+        });
+
+        // 3. 滚动监听
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    const index = Array.from(sections).indexOf(entry.target);
+                    document.querySelectorAll('.line').forEach((line, i) => {
+                        line.classList.toggle('active', i === index);
+                    });
+                }
+            });
+        }, { threshold: 0.5 });
+        sections.forEach(s => observer.observe(s));
+    </script>
+</body>
+</html>
